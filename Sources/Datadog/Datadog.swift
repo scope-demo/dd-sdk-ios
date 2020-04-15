@@ -116,11 +116,11 @@ public class Datadog {
         carrierInfoProvider: CarrierInfoProviderType?
     ) throws {
         let logsPersistenceStrategy = try LogsPersistenceStrategy(
-            environment: .app,
+            environment: appContext.environment,
             dateProvider: dateProvider
         )
         let logsUploadStrategy = LogsUploadStrategy(
-            environment: .app,
+            environment: appContext.environment,
             appContext: appContext,
             logsUploadURLProvider: logsUploadURLProvider,
             reader: logsPersistenceStrategy.reader,
