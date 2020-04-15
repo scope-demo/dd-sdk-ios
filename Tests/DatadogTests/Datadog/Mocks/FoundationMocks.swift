@@ -166,6 +166,22 @@ extension Bundle {
     static func mockAny() -> Bundle {
         return Bundle.main
     }
+
+    class AppBundleMock: Bundle {
+        override var bundlePath: String { "mock.app" }
+    }
+
+    class AppExtensionBundleMock: Bundle {
+        override var bundlePath: String { "mock.appex" }
+    }
+
+    static func mockAppBundle() -> Bundle {
+        return AppBundleMock()
+    }
+
+    static func mockAppExtensionBundle() -> Bundle {
+        return AppExtensionBundleMock()
+    }
 }
 
 // MARK: - HTTP

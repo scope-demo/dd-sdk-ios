@@ -23,8 +23,8 @@ internal struct LogsPersistenceStrategy {
         )
         let orchestrator = FilesOrchestrator(
             directory: directory,
-            writeConditions: WritableFileConditions(environment: environment),
-            readConditions: ReadableFileConditions(environment: environment),
+            writeConditions: WritableFileConditions(environment: environment.configuration),
+            readConditions: ReadableFileConditions(environment: environment.configuration),
             dateProvider: dateProvider
         )
 
@@ -32,7 +32,7 @@ internal struct LogsPersistenceStrategy {
             writer: FileWriter(
                 orchestrator: orchestrator,
                 queue: readWriteQueue,
-                maxWriteSize: environment.maxLogSize
+                maxWriteSize: environment.configuration.maxLogSize
             ),
             reader: FileReader(
                 orchestrator: orchestrator,

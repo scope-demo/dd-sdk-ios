@@ -12,7 +12,7 @@ internal struct WritableFileConditions {
     let maxFileAgeForWrite: TimeInterval
     let maxNumberOfUsesOfFile: Int
 
-    init(environment: Environment) {
+    init(environment: Environment.Configuration) {
         self.maxDirectorySize = environment.maxSizeOfLogsDirectory
         self.maxFileSize = environment.maxBatchSize
         self.maxFileAgeForWrite = environment.maxFileAgeForWrite
@@ -24,7 +24,7 @@ internal struct ReadableFileConditions {
     let minFileAgeForRead: TimeInterval
     let maxFileAgeForRead: TimeInterval
 
-    init(environment: Environment) {
+    init(environment: Environment.Configuration) {
         minFileAgeForRead = environment.minFileAgeForRead
         maxFileAgeForRead = environment.maxFileAgeForRead
     }

@@ -35,6 +35,16 @@ class DatadogConfigurationTests: XCTestCase {
     }
 }
 
+class AppContextTests: XCTestCase {
+    func testGivenAppBundle_itSetsAppEnvironment() {
+        XCTAssertEqual(AppContext(mainBundle: .mockAppBundle()).environment, .app)
+    }
+
+    func testGivenAppExtensionBundle_itSetsAppExtensionEnvironment() {
+        XCTAssertEqual(AppContext(mainBundle: .mockAppExtensionBundle()).environment, .appExtension)
+    }
+}
+
 class DatadogTests: XCTestCase {
     private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
     private typealias Config = Datadog.Configuration
@@ -96,8 +106,12 @@ class DatadogTests: XCTestCase {
 
     // MARK: - Defaults
 
+    func testDefaultVerbosityLevel() {
+        XCTAssertNil(Datadog.verbosityLevel)
+    }
+
     func testDefaultAppContext() throws {
-        let mockConfig = Config(clientToken: "mockClientToken", logsEndpoint: .us)
+        let mockConfig = Datadog.Configuration(clientToken: "mockClientToken", logsEndpoint: .us)
         Datadog.initialize(appContext: .init(), configuration: mockConfig)
 
         let appContext = Datadog.instance?.appContext
@@ -116,9 +130,5 @@ class DatadogTests: XCTestCase {
         }
 
         try Datadog.deinitializeOrThrow()
-    }
-
-    func testDefaultVerbosityLevel() {
-        XCTAssertNil(Datadog.verbosityLevel)
     }
 }

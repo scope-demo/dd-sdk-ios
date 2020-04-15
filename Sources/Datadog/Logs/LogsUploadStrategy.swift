@@ -46,7 +46,7 @@ internal struct LogsUploadStrategy {
                 fileReader: reader,
                 dataUploader: dataUploader,
                 uploadConditions: uploadConditions,
-                delay: DataUploadDelay(environment: environment)
+                delay: DataUploadDelay(environment: environment.configuration)
             )
         )
     }

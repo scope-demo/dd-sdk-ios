@@ -8,7 +8,7 @@ import XCTest
 @testable import Datadog
 
 class DataUploadDelayTests: XCTestCase {
-    private let mockEnvironment: Environment = .mockWith(
+    private let mockEnvironment: Environment.Configuration = .mockWith(
         initialLogsUploadDelay: 3,
         defaultLogsUploadDelay: 5,
         minLogsUploadDelay: 1,

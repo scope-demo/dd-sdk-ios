@@ -15,7 +15,7 @@ internal struct DataUploadDelay {
 
     private var delay: TimeInterval
 
-    init(environment: Environment) {
+    init(environment: Environment.Configuration) {
         self.defaultDelay = environment.defaultLogsUploadDelay
         self.minDelay = environment.minLogsUploadDelay
         self.maxDelay = environment.maxLogsUploadDelay

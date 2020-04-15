@@ -62,8 +62,8 @@ class RelativeDateProvider: DateProvider {
 
 // MARK: - Environment
 
-extension Environment {
-    static func mockAny() -> Environment {
+extension Environment.Configuration {
+    static func mockAny() -> Environment.Configuration {
         return .mockWith()
     }
 
@@ -81,8 +81,8 @@ extension Environment {
         minLogsUploadDelay: TimeInterval = .mockAny(),
         maxLogsUploadDelay: TimeInterval = .mockAny(),
         logsUploadDelayDecreaseFactor: Double = .mockAny()
-    ) -> Environment {
-        return Environment(
+    ) -> Environment.Configuration {
+        return Environment.Configuration(
             maxBatchSize: maxBatchSize,
             maxSizeOfLogsDirectory: maxSizeOfLogsDirectory,
             maxFileAgeForWrite: maxFileAgeForWrite,
@@ -99,8 +99,8 @@ extension Environment {
     }
 
     /// Mocks environment which optimizes read / write / upload time for fast unit tests execution.
-    static func mockTestsEnvironment() -> Environment {
-        return Environment(
+    static func mockTestsEnvironment() -> Environment.Configuration {
+        return Environment.Configuration(
             // persistence
             maxBatchSize: 4 * 1_024 * 1_024, // 4MB
             maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
@@ -187,7 +187,7 @@ extension FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
             writeConditions: .mockWriteToSingleFile(),
-            readConditions: ReadableFileConditions(environment: .appEnvironment),
+            readConditions: ReadableFileConditions(environment: Environment.app.configuration),
             dateProvider: SystemDateProvider()
         )
     }
@@ -196,7 +196,7 @@ extension FilesOrchestrator {
     static func mockReadAllFiles(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
-            writeConditions: WritableFileConditions(environment: .appEnvironment),
+            writeConditions: WritableFileConditions(environment: Environment.app.configuration),
             readConditions: .mockReadAllFiles(),
             dateProvider: SystemDateProvider()
         )
@@ -634,6 +634,7 @@ extension AppContext {
     }
 
     static func mockWith(
+        environment: Environment = .app,
         bundleIdentifier: String? = nil,
         bundleVersion: String? = nil,
         bundleShortVersion: String? = nil,
@@ -641,6 +642,7 @@ extension AppContext {
         mobileDevice: MobileDevice? = nil
     ) -> AppContext {
         return AppContext(
+            environment: environment,
             bundleIdentifier: bundleIdentifier,
             bundleVersion: bundleVersion,
             bundleShortVersion: bundleShortVersion,

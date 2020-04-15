@@ -6,88 +6,104 @@
 
 import Foundation
 
-internal struct Environment {
-    // MARK: - Data persistence
+/// An environment running the SDK.
+internal enum Environment: Equatable {
+    /// iOS app
+    case app
+    /// iOS app extension
+    case appExtension
 
-    /// Maximum size of batched logs in single file (in bytes).
-    /// If last written file is too big to append next log data, new file is created.
-    let maxBatchSize: UInt64
-    /// Maximum size of the log files directory.
-    /// If this size is exceeded, log files are being deleted (starting from the oldest one) until this limit is met again.
-    let maxSizeOfLogsDirectory: UInt64
-    /// Maximum age of logs file for file reuse (in seconds).
-    /// If last written file is older than this, new file is created to store next log data.
-    let maxFileAgeForWrite: TimeInterval
-    /// Minimum age of logs file to be picked for upload (in seconds).
-    /// It has the arbitrary offset (0.5s) over `maxFileAgeForWrite` to ensure that no upload is started for the file being written.
-    let minFileAgeForRead: TimeInterval
-    /// Maximum age of logs file to be picked for uload (in seconds).
-    /// Files older than this age are considered outdated and get deleted with no upload.
-    let maxFileAgeForRead: TimeInterval
-    /// Maximum number of logs written to single file.
-    /// If number of logs in last written file reaches this limit, new file is created to store next log data.
-    let maxLogsPerBatch: Int
-    /// Maximum size of serialized log data.
-    /// If JSON encoded `Log` exceeds this size, it is dropped (not written to file).
-    let maxLogSize: Int
+    /// Persistence and upload configuration for given environment.
+    var configuration: Configuration {
+        switch self {
+        case .app: return .appConfiguration
+        case .appExtension: return .appExtensionConfiguration
+        }
+    }
 
-    // MARK: - Data upload
+    internal struct Configuration {
+        // MARK: - Data persistence
 
-    /// Initial delay of the first batch upload (in seconds).
-    /// It is used as a base value until SDK finds no more log batches - then `defaultLogsUploadDelay` is used as a new base.
-    let initialLogsUploadDelay: TimeInterval
-    /// Default time interval for logs upload (in seconds).
-    /// At runtime, the upload interval ranges from `minLogsUploadDelay` to `maxLogsUploadDelay` depending
-    /// on logs delivery success / failure.
-    let defaultLogsUploadDelay: TimeInterval
-    /// Mininum time interval for logs upload (in seconds).
-    /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
-    /// on logs delivery success / failure.
-    let minLogsUploadDelay: TimeInterval
-    /// Maximum time interval for logs upload (in seconds).
-    /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
-    /// on logs delivery success / failure.
-    let maxLogsUploadDelay: TimeInterval
-    /// Change factor of logs upload interval due to upload success.
-    let logsUploadDelayDecreaseFactor: Double
+        /// Maximum size of batched logs in single file (in bytes).
+        /// If last written file is too big to append next log data, new file is created.
+        let maxBatchSize: UInt64
+        /// Maximum size of the log files directory.
+        /// If this size is exceeded, log files are being deleted (starting from the oldest one) until this limit is met again.
+        let maxSizeOfLogsDirectory: UInt64
+        /// Maximum age of logs file for file reuse (in seconds).
+        /// If last written file is older than this, new file is created to store next log data.
+        let maxFileAgeForWrite: TimeInterval
+        /// Minimum age of logs file to be picked for upload (in seconds).
+        /// It has the arbitrary offset (0.5s) over `maxFileAgeForWrite` to ensure that no upload is started for the file being written.
+        let minFileAgeForRead: TimeInterval
+        /// Maximum age of logs file to be picked for uload (in seconds).
+        /// Files older than this age are considered outdated and get deleted with no upload.
+        let maxFileAgeForRead: TimeInterval
+        /// Maximum number of logs written to single file.
+        /// If number of logs in last written file reaches this limit, new file is created to store next log data.
+        let maxLogsPerBatch: Int
+        /// Maximum size of serialized log data.
+        /// If JSON encoded `Log` exceeds this size, it is dropped (not written to file).
+        let maxLogSize: Int
 
-    // MARK: - Available environments
+        // MARK: - Data upload
 
-    /// Configuration for iOS app.
-    static let appEnvironment = Environment(
-        // persistence
-        maxBatchSize: 4 * 1_024 * 1_024, // 4MB
-        maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
-        maxFileAgeForWrite: 4.75,
-        minFileAgeForRead: 4.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
-        maxFileAgeForRead: 18 * 60 * 60, // 18h
-        maxLogsPerBatch: 500,
-        maxLogSize: 256 * 1_024, // 256KB
+        /// Initial delay of the first batch upload (in seconds).
+        /// It is used as a base value until SDK finds no more log batches - then `defaultLogsUploadDelay` is used as a new base.
+        let initialLogsUploadDelay: TimeInterval
+        /// Default time interval for logs upload (in seconds).
+        /// At runtime, the upload interval ranges from `minLogsUploadDelay` to `maxLogsUploadDelay` depending
+        /// on logs delivery success / failure.
+        let defaultLogsUploadDelay: TimeInterval
+        /// Mininum time interval for logs upload (in seconds).
+        /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
+        /// on logs delivery success / failure.
+        let minLogsUploadDelay: TimeInterval
+        /// Maximum time interval for logs upload (in seconds).
+        /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
+        /// on logs delivery success / failure.
+        let maxLogsUploadDelay: TimeInterval
+        /// Change factor of logs upload interval due to upload success.
+        let logsUploadDelayDecreaseFactor: Double
 
-        // upload
-        initialLogsUploadDelay: 5, // postpone to not impact app launch time
-        defaultLogsUploadDelay: 5,
-        minLogsUploadDelay: 1,
-        maxLogsUploadDelay: 20,
-        logsUploadDelayDecreaseFactor: 0.9
-    )
+        // MARK: - Available environments
 
-    /// Configuration for iOS app extension.
-    static let appExtensionEnvironment = Environment(
-        // persistence
-        maxBatchSize: 4 * 1_024 * 1_024, // 4MB
-        maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
-        maxFileAgeForWrite: 4.75,
-        minFileAgeForRead: 4.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
-        maxFileAgeForRead: 18 * 60 * 60, // 18h
-        maxLogsPerBatch: 500,
-        maxLogSize: 256 * 1_024, // 256KB
+        /// Configuration for iOS app.
+        fileprivate static let appConfiguration = Configuration(
+            // persistence
+            maxBatchSize: 4 * 1_024 * 1_024, // 4MB
+            maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
+            maxFileAgeForWrite: 4.75,
+            minFileAgeForRead: 4.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
+            maxFileAgeForRead: 18 * 60 * 60, // 18h
+            maxLogsPerBatch: 500,
+            maxLogSize: 256 * 1_024, // 256KB
 
-        // upload
-        initialLogsUploadDelay: 0.1, // send immediately to have a chance for upload in short-lived extensions
-        defaultLogsUploadDelay: 3,
-        minLogsUploadDelay: 1,
-        maxLogsUploadDelay: 5,
-        logsUploadDelayDecreaseFactor: 0.5 // reduce significantly for more uploads in short-lived extensions
-    )
+            // upload
+            initialLogsUploadDelay: 5, // postpone to not impact app launch time
+            defaultLogsUploadDelay: 5,
+            minLogsUploadDelay: 1,
+            maxLogsUploadDelay: 20,
+            logsUploadDelayDecreaseFactor: 0.9
+        )
+
+        /// Configuration for iOS app extension.
+        fileprivate static let appExtensionConfiguration = Configuration(
+            // persistence
+            maxBatchSize: 4 * 1_024 * 1_024, // 4MB
+            maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
+            maxFileAgeForWrite: 4.75,
+            minFileAgeForRead: 4.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
+            maxFileAgeForRead: 18 * 60 * 60, // 18h
+            maxLogsPerBatch: 500,
+            maxLogSize: 256 * 1_024, // 256KB
+
+            // upload
+            initialLogsUploadDelay: 0.1, // send immediately to have a chance for upload in short-lived extensions
+            defaultLogsUploadDelay: 3,
+            minLogsUploadDelay: 1,
+            maxLogsUploadDelay: 5,
+            logsUploadDelayDecreaseFactor: 0.5 // reduce significantly for more uploads in short-lived extensions
+        )
+    }
 }

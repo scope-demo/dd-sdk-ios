@@ -8,8 +8,8 @@ import XCTest
 @testable import Datadog
 
 class FilesOrchestratorTests: XCTestCase {
-    private let defaultWriteConditions = WritableFileConditions(environment: .appEnvironment)
-    private let defaultReadConditions = ReadableFileConditions(environment: .appEnvironment)
+    private let defaultWriteConditions = WritableFileConditions(environment: Environment.app.configuration)
+    private let defaultReadConditions = ReadableFileConditions(environment: Environment.app.configuration)
 
     override func setUp() {
         super.setUp()

@@ -14,6 +14,7 @@ internal let sdkVersion = "1.0.2"
 public class Datadog {
     /// Provides information about the app.
     public struct AppContext {
+        internal let environment: Environment
         internal let bundleIdentifier: String?
         internal let bundleVersion: String?
         internal let bundleShortVersion: String?
@@ -23,6 +24,7 @@ public class Datadog {
 
         public init(mainBundle: Bundle = Bundle.main) {
             self.init(
+                environment: mainBundle.bundlePath.hasSuffix(".appex") ? .appExtension : .app,
                 bundleIdentifier: mainBundle.bundleIdentifier,
                 bundleVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
                 bundleShortVersion: mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
@@ -32,12 +34,14 @@ public class Datadog {
         }
 
         internal init(
+            environment: Environment,
             bundleIdentifier: String?,
             bundleVersion: String?,
             bundleShortVersion: String?,
             executableName: String?,
             mobileDevice: MobileDevice?
         ) {
+            self.environment = environment
             self.bundleIdentifier = bundleIdentifier
             self.bundleVersion = bundleVersion
             self.bundleShortVersion = bundleShortVersion
@@ -112,11 +116,11 @@ public class Datadog {
         carrierInfoProvider: CarrierInfoProviderType?
     ) throws {
         let logsPersistenceStrategy = try LogsPersistenceStrategy(
-            environment: .appEnvironment,
+            environment: .app,
             dateProvider: dateProvider
         )
         let logsUploadStrategy = LogsUploadStrategy(
-            environment: .appEnvironment,
+            environment: .app,
             appContext: appContext,
             logsUploadURLProvider: logsUploadURLProvider,
             reader: logsPersistenceStrategy.reader,
