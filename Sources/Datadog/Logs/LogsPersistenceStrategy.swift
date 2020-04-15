@@ -8,10 +8,15 @@ import Foundation
 
 /// Prepares and owns logs persistency stack.
 internal struct LogsPersistenceStrategy {
+    struct Constants {
+        /// Subdirectory in `/Library/Caches` where log files are stored.
+        static let logFilesSubdirectory: String = "com.datadoghq.logs/v1"
+    }
+
     // MARK: - Initialization
 
     init(environment: Environment, dateProvider: DateProvider) throws {
-        let directory = try Directory(withSubdirectoryPath: environment.logFilesSubdirectory)
+        let directory = try Directory(withSubdirectoryPath: Constants.logFilesSubdirectory)
         let readWriteQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-logs-read-write",
             target: .global(qos: .utility)

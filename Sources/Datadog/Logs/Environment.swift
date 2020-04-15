@@ -9,8 +9,6 @@ import Foundation
 internal struct Environment {
     // MARK: - Data persistence
 
-    /// Subdirectory in `/Library/Caches` where log files are stored.
-    let logFilesSubdirectory: String
     /// Maximum size of batched logs in single file (in bytes).
     /// If last written file is too big to append next log data, new file is created.
     let maxBatchSize: UInt64
@@ -58,7 +56,6 @@ internal struct Environment {
     /// Configuration for iOS app.
     static let appEnvironment = Environment(
         // persistence
-        logFilesSubdirectory: "com.datadoghq.logs/v1",
         maxBatchSize: 4 * 1_024 * 1_024, // 4MB
         maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
         maxFileAgeForWrite: 4.75,
@@ -78,7 +75,6 @@ internal struct Environment {
     /// Configuration for iOS app extension.
     static let appExtensionEnvironment = Environment(
         // persistence
-        logFilesSubdirectory: "com.datadoghq.logs/v1",
         maxBatchSize: 4 * 1_024 * 1_024, // 4MB
         maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
         maxFileAgeForWrite: 4.75,

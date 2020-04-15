@@ -69,7 +69,6 @@ extension Environment {
 
     /// Partial mock for environment optimized for different write / reads / upload use cases in unit tests.
     static func mockWith(
-        logFilesSubdirectory: String = .mockAny(),
         maxBatchSize: UInt64 = .mockAny(),
         maxSizeOfLogsDirectory: UInt64 = .mockAny(),
         maxFileAgeForWrite: TimeInterval = .mockAny(),
@@ -84,7 +83,6 @@ extension Environment {
         logsUploadDelayDecreaseFactor: Double = .mockAny()
     ) -> Environment {
         return Environment(
-            logFilesSubdirectory: logFilesSubdirectory,
             maxBatchSize: maxBatchSize,
             maxSizeOfLogsDirectory: maxSizeOfLogsDirectory,
             maxFileAgeForWrite: maxFileAgeForWrite,
@@ -101,10 +99,9 @@ extension Environment {
     }
 
     /// Mocks environment which optimizes read / write / upload time for fast unit tests execution.
-    static func mockTestsEnvironment(using directory: Directory? = nil) -> Environment {
+    static func mockTestsEnvironment() -> Environment {
         return Environment(
             // persistence
-            logFilesSubdirectory: directory?.url.lastPathComponent ?? .mockAny(),
             maxBatchSize: 4 * 1_024 * 1_024, // 4MB
             maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
             maxFileAgeForWrite: 4.75,
