@@ -11,11 +11,23 @@ internal struct WritableFileConditions {
     let maxFileSize: UInt64
     let maxFileAgeForWrite: TimeInterval
     let maxNumberOfUsesOfFile: Int
+
+    init(environment: Environment) {
+        self.maxDirectorySize = environment.maxSizeOfLogsDirectory
+        self.maxFileSize = environment.maxBatchSize
+        self.maxFileAgeForWrite = environment.maxFileAgeForWrite
+        self.maxNumberOfUsesOfFile = environment.maxLogsPerBatch
+    }
 }
 
 internal struct ReadableFileConditions {
     let minFileAgeForRead: TimeInterval
     let maxFileAgeForRead: TimeInterval
+
+    init(environment: Environment) {
+        minFileAgeForRead = environment.minFileAgeForRead
+        maxFileAgeForRead = environment.maxFileAgeForRead
+    }
 }
 
 internal class FilesOrchestrator {

@@ -6,39 +6,17 @@
 
 import Foundation
 
-/// Creates and owns components necessary for logs upload.
+/// Prepares and owns logs upload stack.
 internal struct LogsUploadStrategy {
-    struct Constants {
-        /// Default time interval for logs upload (in seconds).
-        /// At runtime, the upload interval range from `minLogsUploadDelay` to `maxLogsUploadDelay` depending
-        /// on logs delivery success / failure.
-        static let defaultLogsUploadDelay: TimeInterval = 5
-        /// Mininum time interval for logs upload (in seconds).
-        /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
-        /// on logs delivery success / failure.
-        static let minLogsUploadDelay: TimeInterval = 1
-        /// Maximum time interval for logs upload (in seconds).
-        /// By default logs are uploaded with `defaultLogsUploadDelay` which might change depending
-        /// on logs delivery success / failure.
-        static let maxLogsUploadDelay: TimeInterval = defaultLogsUploadDelay * 4
-        /// Change factor of logs upload interval due to upload success.
-        static let logsUploadDelayDecreaseFactor: Double = 0.9
-    }
+    // MARK: - Initialization
 
-    /// Default logs upload delay.
-    static let defaultLogsUploadDelay = DataUploadDelay(
-        default: Constants.defaultLogsUploadDelay,
-        min: Constants.minLogsUploadDelay,
-        max: Constants.maxLogsUploadDelay,
-        decreaseFactor: Constants.logsUploadDelayDecreaseFactor
-    )
-
-    static func `default`(
+    init(
+        environment: Environment,
         appContext: AppContext,
         logsUploadURLProvider: UploadURLProvider,
         reader: FileReader,
         networkConnectionInfoProvider: NetworkConnectionInfoProviderType
-    ) -> LogsUploadStrategy {
+    ) {
         let httpClient = HTTPClient()
         let httpHeaders = HTTPHeaders(appContext: appContext)
         let dataUploader = DataUploader(urlProvider: logsUploadURLProvider, httpClient: httpClient, httpHeaders: httpHeaders)
@@ -62,16 +40,16 @@ internal struct LogsUploadStrategy {
             }
         }()
 
-        return LogsUploadStrategy(
-            uploadWorker: DataUploadWorker(
-                queue: uploadQueue,
-                fileReader: reader,
-                dataUploader: dataUploader,
-                uploadConditions: uploadConditions,
-                delay: defaultLogsUploadDelay
-            )
+        self.uploadWorker = DataUploadWorker(
+            queue: uploadQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            uploadConditions: uploadConditions,
+            delay: DataUploadDelay(environment: environment)
         )
     }
+
+    // MARK: - Strategy
 
     /// Uploads data to server with dynamic time intervals.
     let uploadWorker: DataUploadWorker

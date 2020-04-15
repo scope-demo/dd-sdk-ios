@@ -86,6 +86,7 @@
 		61133C6E2423990D00786299 /* DatadogExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C472423990D00786299 /* DatadogExtensions.swift */; };
 		61133C702423993200786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		61133C712423993200786299 /* Datadog.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		614E9EB3244719FA007EE3E1 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614E9EB2244719FA007EE3E1 /* Environment.swift */; };
 		616A62D024349BA700D1BE12 /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 616A626924335D4900D1BE12 /* ObjcExceptionHandler.m */; };
 		616A62D62434A3C500D1BE12 /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 616A626A24335D4900D1BE12 /* ObjcExceptionHandler.h */; };
 		61C363802436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */; };
@@ -217,6 +218,7 @@
 		61133C452423990D00786299 /* SwiftExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftExtensions.swift; sourceTree = "<group>"; };
 		61133C462423990D00786299 /* TestsDirectory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestsDirectory.swift; sourceTree = "<group>"; };
 		61133C472423990D00786299 /* DatadogExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogExtensions.swift; sourceTree = "<group>"; };
+		614E9EB2244719FA007EE3E1 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		61545C9C243DD2610017B6D5 /* module.private.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.private.modulemap; sourceTree = "<group>"; };
 		61545C9D243DD2610017B6D5 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		61545C9F243DD35C0017B6D5 /* SPMHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPMHeaders.h; sourceTree = "<group>"; };
@@ -390,6 +392,7 @@
 		61133BBC2423979B00786299 /* Logs */ = {
 			isa = PBXGroup;
 			children = (
+				614E9EB2244719FA007EE3E1 /* Environment.swift */,
 				61133BBD2423979B00786299 /* LogsUploadStrategy.swift */,
 				61133BBE2423979B00786299 /* LogsPersistenceStrategy.swift */,
 				61133BBF2423979B00786299 /* Attributes */,
@@ -866,6 +869,7 @@
 				61133BE42423979B00786299 /* LogEncoder.swift in Sources */,
 				61133BD82423979B00786299 /* HTTPClient.swift in Sources */,
 				61133BDB2423979B00786299 /* DatadogConfiguration.swift in Sources */,
+				614E9EB3244719FA007EE3E1 /* Environment.swift in Sources */,
 				61133BE22423979B00786299 /* LogsPersistenceStrategy.swift in Sources */,
 				61133BCE2423979B00786299 /* BatteryStatusProvider.swift in Sources */,
 				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
