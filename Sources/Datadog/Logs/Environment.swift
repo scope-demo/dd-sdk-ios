@@ -90,16 +90,16 @@ internal enum Environment: Equatable {
         /// Configuration for iOS app extension.
         fileprivate static let appExtensionConfiguration = Configuration(
             // persistence
-            maxBatchSize: 4 * 1_024 * 1_024, // 4MB
-            maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
-            maxFileAgeForWrite: 4.75,
-            minFileAgeForRead: 4.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
-            maxFileAgeForRead: 18 * 60 * 60, // 18h
-            maxLogsPerBatch: 500,
-            maxLogSize: 256 * 1_024, // 256KB
+            maxBatchSize: appConfiguration.maxBatchSize,
+            maxSizeOfLogsDirectory: appConfiguration.maxSizeOfLogsDirectory,
+            maxFileAgeForWrite: 2.75,
+            minFileAgeForRead: 2.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
+            maxFileAgeForRead: appConfiguration.maxFileAgeForRead,
+            maxLogsPerBatch: appConfiguration.maxLogsPerBatch,
+            maxLogSize: appConfiguration.maxLogSize,
 
             // upload
-            initialLogsUploadDelay: 0.1, // send immediately to have a chance for upload in short-lived extensions
+            initialLogsUploadDelay: 0.5, // send quick to have a chance for upload in short-lived extensions
             defaultLogsUploadDelay: 3,
             minLogsUploadDelay: 1,
             maxLogsUploadDelay: 5,
