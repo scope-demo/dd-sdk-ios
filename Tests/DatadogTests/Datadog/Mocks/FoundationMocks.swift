@@ -114,6 +114,18 @@ extension String {
     }
 }
 
+extension Int {
+    static func mockAny() -> Int {
+        return 0
+    }
+}
+
+extension UInt64 {
+    static func mockAny() -> UInt64 {
+        return 0
+    }
+}
+
 extension Bool {
     static func mockAny() -> Bool {
         return false
@@ -124,6 +136,14 @@ extension Float {
     static func mockAny() -> Float {
         return 0
     }
+}
+
+extension TimeInterval {
+    static func mockAny() -> TimeInterval {
+        return 0
+    }
+
+    static let distantFuture = TimeInterval(integerLiteral: .max)
 }
 
 struct ErrorMock: Error, CustomStringConvertible {

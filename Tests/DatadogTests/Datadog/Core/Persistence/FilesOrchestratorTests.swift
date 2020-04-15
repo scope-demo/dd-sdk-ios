@@ -8,8 +8,8 @@ import XCTest
 @testable import Datadog
 
 class FilesOrchestratorTests: XCTestCase {
-    private let defaultWriteConditions = LogsPersistenceStrategy.defaultWriteConditions
-    private let defaultReadConditions = LogsPersistenceStrategy.defaultReadConditions
+    private let defaultWriteConditions = WritableFileConditions(environment: .appEnvironment)
+    private let defaultReadConditions = ReadableFileConditions(environment: .appEnvironment)
 
     override func setUp() {
         super.setUp()
@@ -120,11 +120,13 @@ class FilesOrchestratorTests: XCTestCase {
 
         let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,
-            writeConditions: .init(
-                maxDirectorySize: 3 * oneMB, // 3MB
-                maxFileSize: oneMB, // 1MB
-                maxFileAgeForWrite: .greatestFiniteMagnitude,
-                maxNumberOfUsesOfFile: 1 // create new file each time
+            writeConditions: WritableFileConditions(
+                environment: .mockWith(
+                    maxBatchSize: oneMB, // 1MB
+                    maxSizeOfLogsDirectory: 3 * oneMB, // 3MB,
+                    maxFileAgeForWrite: .distantFuture,
+                    maxLogsPerBatch: 1 // create new file each time
+                )
             ),
             readConditions: defaultReadConditions,
             dateProvider: RelativeDateProvider(advancingBySeconds: 1)

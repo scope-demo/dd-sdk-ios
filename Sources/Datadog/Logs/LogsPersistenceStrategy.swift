@@ -16,40 +16,29 @@ internal struct LogsPersistenceStrategy {
             label: "com.datadoghq.ios-sdk-logs-read-write",
             target: .global(qos: .utility)
         )
-        self.init(
-            environment: environment,
-            directory: directory,
-            dateProvider: dateProvider,
-            readWriteQueue: readWriteQueue,
-            writeConditions: WritableFileConditions(environment: environment),
-            readConditions: ReadableFileConditions(environment: environment)
-        )
-    }
-
-    init(
-        environment: Environment,
-        directory: Directory,
-        dateProvider: DateProvider,
-        readWriteQueue: DispatchQueue,
-        writeConditions: WritableFileConditions,
-        readConditions: ReadableFileConditions
-    ) {
         let orchestrator = FilesOrchestrator(
             directory: directory,
-            writeConditions: writeConditions,
-            readConditions: readConditions,
+            writeConditions: WritableFileConditions(environment: environment),
+            readConditions: ReadableFileConditions(environment: environment),
             dateProvider: dateProvider
         )
 
-        self.writer = FileWriter(
-            orchestrator: orchestrator,
-            queue: readWriteQueue,
-            maxWriteSize: environment.maxLogSize
+        self.init(
+            writer: FileWriter(
+                orchestrator: orchestrator,
+                queue: readWriteQueue,
+                maxWriteSize: environment.maxLogSize
+            ),
+            reader: FileReader(
+                orchestrator: orchestrator,
+                queue: readWriteQueue
+            )
         )
-        self.reader = FileReader(
-            orchestrator: orchestrator,
-            queue: readWriteQueue
-        )
+    }
+
+    init(writer: FileWriter, reader: FileReader) {
+        self.writer = writer
+        self.reader = reader
     }
 
     // MARK: - Strategy

@@ -40,13 +40,19 @@ internal struct LogsUploadStrategy {
             }
         }()
 
-        self.uploadWorker = DataUploadWorker(
-            queue: uploadQueue,
-            fileReader: reader,
-            dataUploader: dataUploader,
-            uploadConditions: uploadConditions,
-            delay: DataUploadDelay(environment: environment)
+        self.init(
+            uploadWorker: DataUploadWorker(
+                queue: uploadQueue,
+                fileReader: reader,
+                dataUploader: dataUploader,
+                uploadConditions: uploadConditions,
+                delay: DataUploadDelay(environment: environment)
+            )
         )
+    }
+
+    init(uploadWorker: DataUploadWorker) {
+        self.uploadWorker = uploadWorker
     }
 
     // MARK: - Strategy

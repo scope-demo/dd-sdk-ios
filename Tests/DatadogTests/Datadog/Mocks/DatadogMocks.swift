@@ -60,26 +60,93 @@ class RelativeDateProvider: DateProvider {
     }
 }
 
+// MARK: - Environment
+
+extension Environment {
+    static func mockAny() -> Environment {
+        return .mockWith()
+    }
+
+    /// Partial mock for environment optimized for different write / reads / upload use cases in unit tests.
+    static func mockWith(
+        logFilesSubdirectory: String = .mockAny(),
+        maxBatchSize: UInt64 = .mockAny(),
+        maxSizeOfLogsDirectory: UInt64 = .mockAny(),
+        maxFileAgeForWrite: TimeInterval = .mockAny(),
+        minFileAgeForRead: TimeInterval = .mockAny(),
+        maxFileAgeForRead: TimeInterval = .mockAny(),
+        maxLogsPerBatch: Int = .mockAny(),
+        maxLogSize: Int = .mockAny(),
+        initialLogsUploadDelay: TimeInterval = .mockAny(),
+        defaultLogsUploadDelay: TimeInterval = .mockAny(),
+        minLogsUploadDelay: TimeInterval = .mockAny(),
+        maxLogsUploadDelay: TimeInterval = .mockAny(),
+        logsUploadDelayDecreaseFactor: Double = .mockAny()
+    ) -> Environment {
+        return Environment(
+            logFilesSubdirectory: logFilesSubdirectory,
+            maxBatchSize: maxBatchSize,
+            maxSizeOfLogsDirectory: maxSizeOfLogsDirectory,
+            maxFileAgeForWrite: maxFileAgeForWrite,
+            minFileAgeForRead: minFileAgeForRead,
+            maxFileAgeForRead: maxFileAgeForRead,
+            maxLogsPerBatch: maxLogsPerBatch,
+            maxLogSize: maxLogSize,
+            initialLogsUploadDelay: initialLogsUploadDelay,
+            defaultLogsUploadDelay: defaultLogsUploadDelay,
+            minLogsUploadDelay: minLogsUploadDelay,
+            maxLogsUploadDelay: maxLogsUploadDelay,
+            logsUploadDelayDecreaseFactor: logsUploadDelayDecreaseFactor
+        )
+    }
+
+    /// Mocks environment which optimizes read / write / upload time for fast unit tests execution.
+    static func mockTestsEnvironment(using directory: Directory? = nil) -> Environment {
+        return Environment(
+            // persistence
+            logFilesSubdirectory: directory?.url.lastPathComponent ?? .mockAny(),
+            maxBatchSize: 4 * 1_024 * 1_024, // 4MB
+            maxSizeOfLogsDirectory: 512 * 1_024 * 1_024, // 512 MB
+            maxFileAgeForWrite: 4.75,
+            minFileAgeForRead: 4.75 + 0.5, // `maxFileAgeForWrite` + 0.5s margin
+            maxFileAgeForRead: 18 * 60 * 60, // 18h
+            maxLogsPerBatch: 500,
+            maxLogSize: 256 * 1_024, // 256KB
+
+            // upload
+            initialLogsUploadDelay: 5, // postpone to not impact app launch time
+            defaultLogsUploadDelay: 5,
+            minLogsUploadDelay: 1,
+            maxLogsUploadDelay: 20,
+            logsUploadDelayDecreaseFactor: 0.9
+        )
+    }
+}
+
 // MARK: - Files orchestration
 
 extension WritableFileConditions {
     /// Write conditions causing `FilesOrchestrator` to always pick the same file for writting.
     static func mockWriteToSingleFile() -> WritableFileConditions {
         return WritableFileConditions(
-            maxDirectorySize: .max,
-            maxFileSize: .max,
-            maxFileAgeForWrite: .greatestFiniteMagnitude,
-            maxNumberOfUsesOfFile: .max
+            environment: .mockWith(
+                maxBatchSize: .max,
+                maxSizeOfLogsDirectory: .max,
+                maxFileAgeForWrite: .distantFuture,
+                maxLogsPerBatch: .max
+            )
         )
     }
 
     /// Write conditions causing `FilesOrchestrator` to create new file for each write.
     static func mockWriteToNewFileEachTime() -> WritableFileConditions {
         return WritableFileConditions(
-            maxDirectorySize: .max,
-            maxFileSize: .max,
-            maxFileAgeForWrite: .greatestFiniteMagnitude,
-            maxNumberOfUsesOfFile: 1
+            environment: .mockWith(
+                maxBatchSize: .max,
+                maxSizeOfLogsDirectory: .max,
+                maxFileAgeForWrite: .distantFuture,
+                maxLogsPerBatch: 1
+            )
         )
     }
 }
@@ -88,8 +155,10 @@ extension ReadableFileConditions {
     /// Read conditions causing `FilesOrchestrator` to pick all files for reading, no matter of their creation time.
     static func mockReadAllFiles() -> ReadableFileConditions {
         return ReadableFileConditions(
-            minFileAgeForRead: -1,
-            maxFileAgeForRead: .greatestFiniteMagnitude
+            environment: .mockWith(
+                minFileAgeForRead: -1,
+                maxFileAgeForRead: .distantFuture
+            )
         )
     }
 }
@@ -99,14 +168,18 @@ extension FilesOrchestrator {
         return FilesOrchestrator(
             directory: temporaryDirectory,
             writeConditions: WritableFileConditions(
-                maxDirectorySize: 0,
-                maxFileSize: 0,
-                maxFileAgeForWrite: 0,
-                maxNumberOfUsesOfFile: 0
+                environment: .mockWith(
+                    maxBatchSize: 0,
+                    maxSizeOfLogsDirectory: 0,
+                    maxFileAgeForWrite: .distantFuture,
+                    maxLogsPerBatch: 0
+                )
             ),
             readConditions: ReadableFileConditions(
-                minFileAgeForRead: 0,
-                maxFileAgeForRead: 0
+                environment: .mockWith(
+                    minFileAgeForRead: .distantFuture,
+                    maxFileAgeForRead: .distantFuture
+                )
             ),
             dateProvider: SystemDateProvider()
         )
@@ -117,7 +190,7 @@ extension FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
             writeConditions: .mockWriteToSingleFile(),
-            readConditions: LogsPersistenceStrategy.defaultReadConditions,
+            readConditions: ReadableFileConditions(environment: .appEnvironment),
             dateProvider: SystemDateProvider()
         )
     }
@@ -126,7 +199,7 @@ extension FilesOrchestrator {
     static func mockReadAllFiles(in directory: Directory) -> FilesOrchestrator {
         return FilesOrchestrator(
             directory: directory,
-            writeConditions: LogsPersistenceStrategy.defaultWriteConditions,
+            writeConditions: WritableFileConditions(environment: .appEnvironment),
             readConditions: .mockReadAllFiles(),
             dateProvider: SystemDateProvider()
         )
@@ -375,16 +448,19 @@ extension UploadURLProvider {
 
 extension DataUploadDelay {
     static func mockAny() -> DataUploadDelay {
-        return DataUploadDelay(default: 0, min: 0, max: 0, decreaseFactor: 0)
+        return DataUploadDelay(environment: .mockAny())
     }
 
     /// Mocks constant delay returning given amount of seconds, no matter of `.decrease()` or `.increaseOnce()` calls.
     static func mockConstantDelay(of seconds: TimeInterval) -> DataUploadDelay {
         return DataUploadDelay(
-            default: seconds,
-            min: seconds,
-            max: seconds,
-            decreaseFactor: 1
+            environment: .mockWith(
+                initialLogsUploadDelay: seconds,
+                defaultLogsUploadDelay: seconds,
+                minLogsUploadDelay: seconds,
+                maxLogsUploadDelay: seconds,
+                logsUploadDelayDecreaseFactor: 1
+            )
         )
     }
 }
@@ -486,15 +562,20 @@ extension LogsPersistenceStrategy {
         in directory: Directory,
         using dateProvider: DateProvider
     ) -> LogsPersistenceStrategy {
-        return .default(
-            in: directory,
-            using: dateProvider,
-            readWriteQueue: DispatchQueue(
-                label: "com.datadoghq.ios-sdk-logs-read-write",
-                target: .global(qos: .utility)
-            ),
+        let readWriteQueue = DispatchQueue(
+            label: "com.datadoghq.ios-sdk-logs-read-write",
+            target: .global(qos: .utility)
+        )
+        let orchestrator = FilesOrchestrator(
+            directory: directory,
             writeConditions: .mockWriteToNewFileEachTime(),
-            readConditions: .mockReadAllFiles()
+            readConditions: .mockReadAllFiles(),
+            dateProvider: dateProvider
+        )
+
+        return LogsPersistenceStrategy(
+            writer: FileWriter(orchestrator: orchestrator, queue: readWriteQueue, maxWriteSize: .max),
+            reader: FileReader(orchestrator: orchestrator, queue: readWriteQueue)
         )
     }
 }

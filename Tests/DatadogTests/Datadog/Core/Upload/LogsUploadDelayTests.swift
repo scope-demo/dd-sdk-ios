@@ -8,38 +8,46 @@ import XCTest
 @testable import Datadog
 
 class DataUploadDelayTests: XCTestCase {
-    func testWhenNotModified_itReturnsDefaultDelay() {
-        var delay = LogsUploadStrategy.defaultLogsUploadDelay
-        XCTAssertEqual(delay.nextUploadDelay(), LogsUploadStrategy.Constants.defaultLogsUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), LogsUploadStrategy.Constants.defaultLogsUploadDelay)
+    private let mockEnvironment: Environment = .mockWith(
+        initialLogsUploadDelay: 3,
+        defaultLogsUploadDelay: 5,
+        minLogsUploadDelay: 1,
+        maxLogsUploadDelay: 20,
+        logsUploadDelayDecreaseFactor: 0.9
+    )
+
+    func testWhenNotModified_itReturnsInitialDelay() {
+        var delay = DataUploadDelay(environment: mockEnvironment)
+        XCTAssertEqual(delay.nextUploadDelay(), mockEnvironment.initialLogsUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockEnvironment.initialLogsUploadDelay)
     }
 
     func testWhenDecreasing_itGoesDownToMinimumDelay() {
-        var delay = LogsUploadStrategy.defaultLogsUploadDelay
+        var delay = DataUploadDelay(environment: mockEnvironment)
         var previousValue: TimeInterval = delay.nextUploadDelay()
 
-        while previousValue != LogsUploadStrategy.Constants.minLogsUploadDelay {
+        while previousValue != mockEnvironment.minLogsUploadDelay {
             delay.decrease()
 
             let nextValue = delay.nextUploadDelay()
             XCTAssertEqual(
                 nextValue / previousValue,
-                LogsUploadStrategy.Constants.logsUploadDelayDecreaseFactor,
+                mockEnvironment.logsUploadDelayDecreaseFactor,
                 accuracy: 0.1
             )
-            XCTAssertLessThanOrEqual(nextValue, max(previousValue, LogsUploadStrategy.Constants.minLogsUploadDelay))
+            XCTAssertLessThanOrEqual(nextValue, max(previousValue, mockEnvironment.minLogsUploadDelay))
 
             previousValue = nextValue
         }
     }
 
     func testWhenIncreasedOnce_itReturnsMaximumDelayOnceThenGoesBackToDefaultDelay() {
-        var delay = LogsUploadStrategy.defaultLogsUploadDelay
+        var delay = DataUploadDelay(environment: mockEnvironment)
         delay.decrease()
         delay.increaseOnce()
 
-        XCTAssertEqual(delay.nextUploadDelay(), LogsUploadStrategy.Constants.maxLogsUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), LogsUploadStrategy.Constants.defaultLogsUploadDelay)
-        XCTAssertEqual(delay.nextUploadDelay(), LogsUploadStrategy.Constants.defaultLogsUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockEnvironment.maxLogsUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockEnvironment.defaultLogsUploadDelay)
+        XCTAssertEqual(delay.nextUploadDelay(), mockEnvironment.defaultLogsUploadDelay)
     }
 }
