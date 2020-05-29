@@ -8,7 +8,7 @@ import Foundation
 
 /// Creates URL and adds query items before providing them
 internal class UploadURLProvider {
-    private let rawURL: URL
+    private let urlWithClientToken: URL
     private let dateProvider: DateProvider
 
     private var queryItems: [URLQueryItem] {
@@ -16,35 +16,25 @@ internal class UploadURLProvider {
         let currentTimeMillis = dateProvider.currentDate().currentTimeMillis
         let batchTimeQueryItem = URLQueryItem(name: "batch_time", value: "\(currentTimeMillis)")
         // ddsource
-        let ddSourceQueryItem = URLQueryItem(name: "ddsource", value: "mobile")
+        let ddSourceQueryItem = URLQueryItem(name: "ddsource", value: "ios")
 
         return [ddSourceQueryItem, batchTimeQueryItem]
     }
 
     var url: URL {
-        var urlComponents = URLComponents(url: rawURL, resolvingAgainstBaseURL: false)
+        var urlComponents = URLComponents(url: urlWithClientToken, resolvingAgainstBaseURL: false)
         urlComponents?.percentEncodedQueryItems = queryItems
 
         guard let url = urlComponents?.url else {
-            userLogger.error("🔥 Failed to create URL from \(rawURL) with \(queryItems)")
-            developerLogger?.error("🔥 Failed to create URL from \(rawURL) with \(queryItems)")
-            return rawURL
+            userLogger.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItems)")
+            developerLogger?.error("🔥 Failed to create URL from \(urlWithClientToken) with \(queryItems)")
+            return urlWithClientToken
         }
         return url
     }
 
-    init(endpointURL: String, clientToken: String, dateProvider: DateProvider) throws {
-        guard !endpointURL.isEmpty, let endpointURL = URL(string: endpointURL) else {
-            throw ProgrammerError(description: "`endpointURL` cannot be empty.")
-        }
-        guard !clientToken.isEmpty else {
-            throw ProgrammerError(description: "`clientToken` cannot be empty.")
-        }
-        let endpointURLWithClientToken = endpointURL.appendingPathComponent(clientToken)
-        guard let url = URL(string: endpointURLWithClientToken.absoluteString) else {
-            throw ProgrammerError(description: "Cannot build logs upload URL.")
-        }
-        self.rawURL = url
+    init(urlWithClientToken: URL, dateProvider: DateProvider) {
+        self.urlWithClientToken = urlWithClientToken
         self.dateProvider = dateProvider
     }
 }

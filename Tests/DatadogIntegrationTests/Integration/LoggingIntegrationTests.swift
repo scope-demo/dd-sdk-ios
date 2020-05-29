@@ -21,7 +21,7 @@ class LoggingIntegrationTests: IntegrationTests {
         // Initialize SDK
         Datadog.initialize(
             appContext: .init(mainBundle: Bundle.init(for: type(of: self))),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "client-token")
+            configuration: Datadog.Configuration.builderUsing(clientToken: "client-token", environment: "integration")
                 .set(logsEndpoint: .custom(url: serverSession.recordingURL.absoluteString))
                 .build()
         )
@@ -53,7 +53,7 @@ class LoggingIntegrationTests: IntegrationTests {
         // Assert
         let recordedRequests = try serverSession.getRecordedPOSTRequests()
         recordedRequests.forEach { request in
-            XCTAssertTrue(request.path.contains("/client-token?ddsource=mobile"))
+            XCTAssertTrue(request.path.contains("/client-token?ddsource=ios"))
         }
 
         let logMatchers = try recordedRequests
@@ -91,7 +91,7 @@ class LoggingIntegrationTests: IntegrationTests {
                     "attribute": "value",
                 ]
             )
-            matcher.assertTags(equal: ["tag1:tag-value", "tag2"])
+            matcher.assertTags(equal: ["env:integration", "tag1:tag-value", "tag2"])
 
             matcher.assertValue(
                 forKeyPath: LogMatcher.JSONKey.networkReachability,
