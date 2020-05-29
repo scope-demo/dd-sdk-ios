@@ -14,4 +14,6 @@ jobs:
         with:
           dsn: ${{ secrets.SCOPE_DSN }}
           codePath: true
+        env:
+          SCOPE_RUNNER_ENABLED: YES
           
